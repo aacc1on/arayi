@@ -67,6 +67,17 @@ Token-ը պահվում է միայն ձեր բրաուզերում։ Մի՛ ո�
 
 GitHub-ում բացեք ֆայլը → մատիտի պատկերակ (**Edit**) → փոփոխեք → **Commit changes**։ Կայքը թարմանում է 1–2 րոպեում. բրաուզերում սեղմեք `Ctrl + F5`։
 
+### Cloudflare-ի cache (կարևոր)
+
+Cloudflare-ը և բրաուզերները պահում են `css` և `js` ֆայլերի հին տարբերակը։ Որպեսզի փոփոխությունը միանգամից երևա բոլորին.
+
+1. `css/style.css`, `js/config.js`, `js/content.js` կամ `js/app.js` փոխելուց հետո `index.html`-ում փոխեք `?v=` թիվը այդ ֆայլի հղման մեջ (օր.՝ `?v=20261018` → `?v=20261025`)։
+2. Կամ Cloudflare → ձեր դոմենը → **Caching → Configuration → Purge Everything**։
+
+Խորհուրդ՝ Cloudflare → **Caching → Configuration → Browser Cache TTL** → **Respect Existing Headers**։ Այդ դեպքում հին ֆայլերը բրաուզերում մնում են առավելագույնը 10 րոպե։
+
+Ապրանքները (`data/products.json`) այս խնդիրը չունեն. դրանք ամեն անգամ թարմ են բեռնվում։
+
 ## Տեղում դիտել
 
 ```bash
