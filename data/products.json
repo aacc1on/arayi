@@ -1,0 +1,48 @@
+{
+  "products": [
+    {
+      "title_hy": "Չժանգոտվող պողպատե կեգեր",
+      "title_en": "Stainless steel kegs",
+      "category_hy": "Խմիչքի արտադրություն",
+      "category_en": "Beverage production",
+      "image": "/assets/products/kegs.jpg",
+      "text_hy": "Կեգեր գարեջրի, կվասի և այլ խմիչքների համար՝ տարբեր տարողությամբ։ Ուղիղ գործարանից՝ ըստ ձեր պատվերի։",
+      "text_en": "Kegs for beer, kvass and other drinks, in different sizes. Factory direct, made to order.",
+      "price": "",
+      "published": true
+    },
+    {
+      "title_hy": "Կեգերի լվացման և լցման սարքավորումներ",
+      "title_en": "Keg washing and filling equipment",
+      "category_hy": "Խմիչքի արտադրություն",
+      "category_en": "Beverage production",
+      "image": "/assets/products/keg-equipment.jpg",
+      "text_hy": "Սարքավորումներ կեգերի լվացման և լցման համար՝ փոքր և մեծ արտադրությունների համար։",
+      "text_en": "Equipment for washing and filling kegs, for small and large production.",
+      "price": "",
+      "published": true
+    },
+    {
+      "title_hy": "Շշալցման գծեր",
+      "title_en": "Bottling lines",
+      "category_hy": "Խմիչքի արտադրություն",
+      "category_en": "Beverage production",
+      "image": "/assets/products/bottling-line.jpg",
+      "text_hy": "Լցման, փակման և պիտակավորման գծեր ջրի, հյութերի և այլ խմիչքների համար։",
+      "text_en": "Filling, capping and labeling lines for water, juices and other drinks.",
+      "price": "",
+      "published": true
+    },
+    {
+      "title_hy": "Շինարարական ձեռնասայլակներ",
+      "title_en": "Construction wheelbarrows",
+      "category_hy": "Շինարարություն",
+      "category_en": "Construction",
+      "image": "/assets/products/wheelbarrows.jpg",
+      "text_hy": "Ամուր ձեռնասայլակներ շինարարության և տնտեսության համար։ Մեծածախ քանակներով՝ ուղիղ գործարանից։",
+      "text_en": "Sturdy wheelbarrows for construction and farm work. Wholesale quantities, factory direct.",
+      "price": "",
+      "published": true
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+# ARAYI — կայքի կառավարման վահանակ (Sveltia CMS)
+# Բացվում է https://arayimport.am/admin հասցեով։
+# Ամեն պահպանում commit է դառնում GitHub-ում, և կայքը թարմանում է 1–2 րոպեում։
+
+backend:
+  name: github
+  repo: aacc1on/arayi
+  branch: main
+  # «Sign In with GitHub» կոճակի համար (ըստ ցանկության, տե՛ս README).
+  # base_url: https://sveltia-cms-auth.YOUR-SUBDOMAIN.workers.dev
+
+app_title: ARAYI — Կառավարում
+logo:
+  src: /assets/img/favicon.png
+site_url: https://arayimport.am
+display_url: https://arayimport.am
+
+# Վերբեռնված նկարները պահվում են այստեղ
+media_folder: assets/products
+public_folder: /assets/products
+
+# Հեռախոսով արված մեծ նկարները ավտոմատ փոքրացվում են (WebP, մինչև 1600px)
+media_libraries:
+  default:
+    config:
+      slugify_filename: true
+      max_file_size: 15000000
+      transformations:
+        raster_image:
+          format: webp
+          quality: 82
+          width: 1600
+          height: 1600
+
+collections:
+  - name: catalog
+    label: Ապրանքներ
+    description: Կայքի «Ապրանքներ» բաժինը։ Ավելացրեք, խմբագրեք կամ քաշելով փոխեք հերթականությունը։
+    icon: inventory_2
+    editor:
+      preview: false
+    files:
+      - name: products
+        label: Ապրանքների ցանկ
+        file: data/products.json
+        format: json
+        fields:
+          - name: products
+            label: Ապրանքներ
+            label_singular: ապրանք
+            widget: list
+            add_to_top: true
+            collapsed: true
+            summary: "{{fields.title_hy}}"
+            fields:
+              - name: title_hy
+                label: Անուն (հայերեն)
+                widget: string
+              - name: title_en
+                label: Name (English)
+                widget: string
+                required: false
+                hint: Եթե դատարկ թողնեք, անգլերեն տարբերակում կերևա հայերեն անունը։
+              - name: category_hy
+                label: Կատեգորիա (հայերեն)
+                widget: string
+                required: false
+                hint: Նույն կատեգորիայի ապրանքների համար գրեք ճիշտ նույն բառերը, օր.՝ «Խմիչքի արտադրություն» կամ «Շինարարություն»։ Կայքում դրանցով ֆիլտր է ստեղծվում։
+              - name: category_en
+                label: Category (English)
+                widget: string
+                required: false
+              - name: image
+                label: Նկար
+                widget: image
+                required: false
+                hint: Լավագույնը՝ հորիզոնական նկար (4:3)։
+              - name: text_hy
+                label: Նկարագրություն (հայերեն)
+                widget: text
+                required: false
+              - name: text_en
+                label: Description (English)
+                widget: text
+                required: false
+              - name: price
+                label: Գին (ոչ պարտադիր)
+                widget: string
+                required: false
+                hint: Օր.՝ «սկսած 25 000 ֏»։ Դատարկ թողնելու դեպքում կերևա «Գինը՝ ըստ հարցման»։
+              - name: published
+                label: Ցուցադրել կայքում
+                widget: boolean
+                default: true
