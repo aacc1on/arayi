@@ -1,6 +1,7 @@
 /* =====================================================================
    ARAYI — կայքի տրամաբանությունը։ Այս ֆայլը փոխելու կարիք չկա.
-   կապի տվյալները՝ js/config.js, տեքստերը՝ js/content.js
+   կապի տվյալները՝ js/config.js, տեքստերը՝ js/content.js,
+   ապրանքները՝ arayimport.am/admin (data/products.json)
    ===================================================================== */
 (function () {
   "use strict";
@@ -12,25 +13,42 @@
     ["INSTAGRAM", "instagram", "Instagram"],
     ["TIKTOK", "tiktok", "TikTok"],
     ["LINKEDIN", "linkedin", "LinkedIn"],
-    ["YOUTUBE", "youtube", "YouTube"],
-    ["TELEGRAM", "telegram", "Telegram"]
-  ];
+    ["YOUTUBE", "youtube", "YouTube"]
+  ];  // Telegram, WhatsApp and Viber have their own buttons in the contact section
+  var PHONE_PATH = "M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z";
+  var currentLang = "hy";
 
   function val(key) { return (SITE[key] || "").toString().trim(); }
   function digits(s) { return s.replace(/[^\d+]/g, ""); }
-  function all(sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); }
-
-  function svgIcon(name) {
-    return '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path fill="currentColor" d="' + ICONS[name] + '"/></svg>';
+  function all(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  function tr(key) { var t = CONTENT[currentLang] || {}; return t[key] !== undefined ? t[key] : ((CONTENT.hy || {})[key] || ""); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
   }
+  function svgPath(d, size) {
+    return '<svg viewBox="0 0 24 24"' + (size ? ' width="' + size + '" height="' + size + '"' : "") +
+      ' aria-hidden="true" focusable="false"><path fill="currentColor" d="' + d + '"/></svg>';
+  }
+  function svgIcon(name) { return svgPath(ICONS[name], 22); }
+
+  /* ---------- links ---------- */
+  function waLink(text) {
+    var wa = val("WHATSAPP");
+    if (!wa) return "";
+    return "https://wa.me/" + digits(wa).replace("+", "") + (text ? "?text=" + encodeURIComponent(text) : "");
+  }
+  function telLink() { var p = val("PHONE"); return p ? "tel:" + digits(p) : ""; }
 
   /* ---------- contacts: filled everywhere from config.js ---------- */
   function fillContacts(lang) {
-    var phone = val("PHONE"), wa = val("WHATSAPP"), email = val("EMAIL");
     var values = {
-      PHONE: phone,
-      WHATSAPP: wa,
-      EMAIL: email,
+      PHONE: val("PHONE"),
+      WHATSAPP: val("WHATSAPP"),
+      VIBER: val("VIBER"),
+      TELEGRAM: val("TELEGRAM"),
+      EMAIL: val("EMAIL"),
       ADDRESS: val(lang === "en" ? "ADDRESS_EN" : "ADDRESS_HY"),
       HOURS: val(lang === "en" ? "HOURS_EN" : "HOURS_HY"),
       MAP_QUERY: val("MAP_QUERY")
@@ -41,9 +59,14 @@
     });
     all("[data-href]").forEach(function (el) {
       var k = el.getAttribute("data-href");
-      if (k === "tel" && phone) el.href = "tel:" + digits(phone);
-      if (k === "mail" && email) el.href = "mailto:" + email;
-      if (k === "whatsapp" && wa) el.href = "https://wa.me/" + digits(wa).replace("+", "");
+      if (k === "tel" && values.PHONE) el.href = telLink();
+      if (k === "mail" && values.EMAIL) el.href = "mailto:" + values.EMAIL;
+      if (k === "whatsapp" && values.WHATSAPP) {
+        var tk = el.getAttribute("data-wa-text");
+        el.href = waLink(tk ? tr(tk) : "");
+      }
+      if (k === "viber" && values.VIBER) el.href = "viber://chat?number=" + encodeURIComponent(digits(values.VIBER));
+      if (k === "telegram" && values.TELEGRAM) el.href = values.TELEGRAM;
     });
     all("[data-requires]").forEach(function (el) {
       el.hidden = !values[el.getAttribute("data-requires")];
@@ -61,10 +84,173 @@
     NETWORKS.forEach(function (n) {
       var url = val(n[0]);
       if (!url) return;
-      html += '<a class="social" href="' + url.replace(/"/g, "&quot;") + '" target="_blank" rel="noopener" aria-label="' + n[2] + '">' + svgIcon(n[1]) + "</a>";
+      html += '<a class="social" href="' + esc(url) + '" target="_blank" rel="noopener" aria-label="' + n[2] + '">' + svgIcon(n[1]) + "</a>";
     });
     all("[data-socials]").forEach(function (el) { el.innerHTML = html; });
     all("[data-requires-social]").forEach(function (el) { el.hidden = !html; });
+  }
+
+  /* ---------- products (data/products.json) ---------- */
+  var products = null;         // null = not loaded yet
+  var activeCat = "";          // "" = all categories
+
+  function pick(p, field) {
+    var a = p[field + "_" + currentLang], b = p[field + "_" + (currentLang === "en" ? "hy" : "en")];
+    return ((a || "").toString().trim()) || ((b || "").toString().trim());
+  }
+  function imgUrl(src) {
+    src = (src || "").toString().trim();
+    if (!src || /^https?:\/\//i.test(src)) return src;
+    return src.replace(/^\/+/, "");      // works on the domain root and on a sub-path
+  }
+  function catKey(p) { return ((p.category_hy || p.category_en || "") + "").trim(); }
+
+  function loadProducts() {
+    fetch("data/products.json", { cache: "no-cache" })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (data) {
+        var list = Array.isArray(data) ? data : (data && data.products) || [];
+        products = list.filter(function (p) {
+          return p && p.published !== false && (p.title_hy || p.title_en);
+        });
+        renderProducts();
+      })
+      .catch(function () { products = []; renderProducts(); });
+  }
+
+  function renderProducts() {
+    var grid = document.querySelector("[data-products]");
+    var chipsEl = document.querySelector("[data-chips]");
+    if (!grid || products === null) return;
+    all(".product:not([data-custom])", grid).forEach(function (el) { el.remove(); });
+    var custom = grid.querySelector("[data-custom]");
+    var tel = telLink(), html = "";
+
+    products.forEach(function (p) {
+      var title = pick(p, "title"), cat = pick(p, "category"), text = pick(p, "text");
+      var price = (p.price || "").toString().trim();
+      var img = imgUrl(p.image);
+      var wa = waLink(tr("products.wa_msg").replace("{title}", title));
+      html += '<article class="product" data-cat="' + esc(catKey(p)) + '">' +
+        '<div class="product-img">' + (img ? '<img src="' + esc(img) + '" alt="' + esc(title) + '" width="800" height="600" loading="lazy">' : "") + "</div>" +
+        '<div class="product-body">' +
+          (cat ? '<span class="product-cat">' + esc(cat) + "</span>" : "") +
+          "<h3>" + esc(title) + "</h3>" +
+          (text ? "<p>" + esc(text) + "</p>" : "") +
+          '<p class="product-price">' + esc(price || tr("products.price")) + "</p>" +
+          '<div class="product-actions">' +
+            (wa ? '<a class="btn btn-wa btn-sm" href="' + esc(wa) + '" target="_blank" rel="noopener">' + svgIcon("whatsapp") + "<span>" + esc(tr("products.whatsapp")) + "</span></a>" : "") +
+            (tel ? '<a class="btn btn-icon" href="' + esc(tel) + '" aria-label="' + esc(tr("products.call") + " " + val("PHONE")) + '" title="' + esc(tr("products.call")) + '">' + svgPath(PHONE_PATH) + "</a>" : "") +
+          "</div>" +
+        "</div>" +
+      "</article>";
+    });
+    if (custom) custom.insertAdjacentHTML("beforebegin", html);
+    else grid.insertAdjacentHTML("beforeend", html);
+
+    // category chips (shown only when there are 2+ categories)
+    var keys = [], labels = {};
+    products.forEach(function (p) {
+      var k = catKey(p);
+      if (k && keys.indexOf(k) < 0) { keys.push(k); labels[k] = pick(p, "category"); }
+    });
+    if (keys.indexOf(activeCat) < 0) activeCat = "";
+    if (chipsEl) {
+      chipsEl.hidden = keys.length < 2;
+      var ch = '<button type="button" class="chip" data-cat="" aria-pressed="' + (activeCat === "" ? "true" : "false") + '">' + esc(tr("products.all")) + "</button>";
+      keys.forEach(function (k) {
+        ch += '<button type="button" class="chip" data-cat="' + esc(k) + '" aria-pressed="' + (activeCat === k ? "true" : "false") + '">' + esc(labels[k]) + "</button>";
+      });
+      chipsEl.innerHTML = ch;
+    }
+    applyFilter();
+  }
+
+  function applyFilter() {
+    all("[data-products] .product:not([data-custom])").forEach(function (el) {
+      el.hidden = !!activeCat && el.getAttribute("data-cat") !== activeCat;
+    });
+    all("[data-chips] .chip").forEach(function (b) {
+      b.setAttribute("aria-pressed", b.getAttribute("data-cat") === activeCat ? "true" : "false");
+    });
+  }
+
+  function initChips() {
+    var chipsEl = document.querySelector("[data-chips]");
+    if (!chipsEl) return;
+    chipsEl.addEventListener("click", function (e) {
+      var b = e.target.closest(".chip");
+      if (!b) return;
+      activeCat = b.getAttribute("data-cat") || "";
+      applyFilter();
+    });
+  }
+
+  /* ---------- promo video ---------- */
+  var video = null, phone = null, userPaused = false, inView = true;
+
+  function updateVideoUI() {
+    if (!video) return;
+    var playBtn = document.querySelector("[data-video-play]");
+    var soundBtn = document.querySelector("[data-video-sound]");
+    var label = document.querySelector("[data-video-sound-label]");
+    phone.classList.toggle("is-paused", video.paused);
+    phone.classList.toggle("is-sound", !video.muted);
+    if (playBtn) playBtn.setAttribute("aria-label", tr(video.paused ? "video.play" : "video.pause"));
+    if (soundBtn) soundBtn.setAttribute("aria-pressed", video.muted ? "false" : "true");
+    if (label) label.textContent = tr(video.muted ? "video.sound.on" : "video.sound.off");
+  }
+
+  function tryPlay() {
+    if (!video || userPaused || !inView) return;
+    var p = video.play();
+    if (p && p.catch) p.catch(function () { updateVideoUI(); });
+  }
+
+  function setVideoLang(lang) {
+    if (!video) return;
+    var src = video.getAttribute("data-video-" + lang), poster = video.getAttribute("data-poster-" + lang);
+    if (src && video.getAttribute("src") !== src) {
+      video.setAttribute("poster", poster);
+      video.setAttribute("src", src);
+      video.load();
+      tryPlay();
+    }
+    updateVideoUI();
+  }
+
+  function initVideo() {
+    video = document.querySelector("[data-promo]");
+    if (!video) return;
+    phone = video.closest(".hero-media") || video.parentNode;
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) { userPaused = true; video.removeAttribute("autoplay"); video.pause(); }
+
+    function togglePlay() {
+      if (video.paused) { userPaused = false; inView = true; tryPlay(); }
+      else { userPaused = true; video.pause(); }
+    }
+    var playBtn = document.querySelector("[data-video-play]");
+    if (playBtn) playBtn.addEventListener("click", togglePlay);
+    video.addEventListener("click", togglePlay);
+
+    var soundBtn = document.querySelector("[data-video-sound]");
+    if (soundBtn) soundBtn.addEventListener("click", function () {
+      video.muted = !video.muted;
+      if (!video.muted && video.paused) { userPaused = false; inView = true; tryPlay(); }
+      updateVideoUI();
+    });
+
+    ["play", "pause", "volumechange"].forEach(function (ev) { video.addEventListener(ev, updateVideoUI); });
+
+    // pause while scrolled out of view, resume when back
+    if ("IntersectionObserver" in window) {
+      new IntersectionObserver(function (entries) {
+        inView = entries[0].isIntersecting;
+        if (!inView && !video.paused) video.pause();
+        else tryPlay();
+      }, { threshold: 0.25 }).observe(video);
+    }
   }
 
   /* ---------- language ---------- */
@@ -76,6 +262,7 @@
   }
 
   function applyLang(lang) {
+    currentLang = lang;
     var t = CONTENT[lang] || CONTENT.hy || {};
     document.documentElement.lang = lang;
     if (t["meta.title"]) document.title = t["meta.title"];
@@ -94,12 +281,15 @@
       var k = el.getAttribute("data-i18n-title"); if (t[k] !== undefined) el.setAttribute("title", t[k]);
     });
     all("[data-src-" + lang + "]").forEach(function (el) {
-      el.src = el.getAttribute("data-src-" + lang);
+      var src = el.getAttribute("data-src-" + lang);
+      if (el.getAttribute("src") !== src) el.src = src;
     });
     all("[data-lang]").forEach(function (b) {
       b.setAttribute("aria-pressed", b.getAttribute("data-lang") === lang ? "true" : "false");
     });
     fillContacts(lang);
+    setVideoLang(lang);
+    renderProducts();
     try { localStorage.setItem("arayi-lang", lang); } catch (e) {}
   }
 
@@ -124,7 +314,10 @@
     });
     var y = document.querySelector("[data-year]"); if (y) y.textContent = new Date().getFullYear();
     fillSocials();
+    initVideo();
+    initChips();
     applyLang(getLang());
     initMenu();
+    loadProducts();
   });
 })();
