@@ -1,6 +1,17 @@
 {
   "products": [
     {
+      "title_hy": "Պռոֆեսյոնալ հեղուկի ճնշման սարք",
+      "title_en": "spray keg",
+      "category_hy": "",
+      "category_en": "",
+      "image": "/assets/products/spray_keg.webp",
+      "text_hy": "",
+      "text_en": "",
+      "price": "",
+      "published": true
+    },
+    {
       "title_hy": "Չժանգոտվող պողպատե կեգեր",
       "title_en": "Stainless steel kegs",
       "category_hy": "Խմիչքի արտադրություն",
