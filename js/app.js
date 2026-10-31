@@ -147,7 +147,8 @@
           .then(function (data) {
             var list = listOf(data).map(fromMarket);
             if (!list.length) throw new Error("empty");
-            return list.slice(0, MAX_PRODUCTS);
+            var feat = list.filter(function (p) { return p.featured; });
+            return (feat.length ? feat : list).slice(0, MAX_PRODUCTS);
           })
           .catch(loadLocal)
       : loadLocal();
