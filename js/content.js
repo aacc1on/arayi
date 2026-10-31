@@ -2,7 +2,7 @@
    ARAYI — ԿԱՅՔԻ ՏԵՔՍՏԵՐԸ (հայերեն և անգլերեն)
    Տեքստ փոխելու համար գտեք անհրաժեշտ տողը և փոխեք չակերտների ներսը։
    • Կապի տվյալները (հեռախոս, էլ. փոստ, սոցցանցեր)՝ js/config.js
-   • Ապրանքները՝ arayimport.am/admin (կամ data/products.json)
+   • Ապրանքները՝ market.arayimport.am/admin (պահուստը՝ data/products.json)
    • {title}-ը ավտոմատ փոխարինվում է ապրանքի անունով
    ===================================================================== */
 
@@ -15,6 +15,7 @@ window.CONTENT = {
     "brand.name": "ԱՐԱՅԻ",
     "nav.import": "Ներմուծում",
     "nav.products": "Ապրանքներ",
+    "nav.market": "Մարկետ",
     "nav.process": "Ինչպես ենք աշխատում",
     "nav.more": "Այլ ծառայություններ",
     "nav.contact": "Կապ",
@@ -52,6 +53,8 @@ window.CONTENT = {
     "products.price": "Գինը՝ ըստ հարցման",
     "products.whatsapp": "Հարցնել WhatsApp-ով",
     "products.call": "Զանգել",
+    "products.more": "Մանրամասն",
+    "products.market_cta": "Ամբողջ կատալոգը մարկետում",
     "products.wa_msg": "Բարև ձեզ, հետաքրքրված եմ՝ {title}։ Կարո՞ղ եք ասել գինը և առաքման ժամկետը։",
     "products.custom.title": "Ձեր ապրանքը չկա՞",
     "products.custom.text": "Ուղարկեք նկար, հղում կամ անվանում. կգտնենք գործարանը և կհաշվարկենք գինը՝ առաքմամբ։",
@@ -120,6 +123,7 @@ window.CONTENT = {
     "brand.name": "ARAYI",
     "nav.import": "Import",
     "nav.products": "Products",
+    "nav.market": "Market",
     "nav.process": "How we work",
     "nav.more": "Other services",
     "nav.contact": "Contact",
@@ -157,6 +161,8 @@ window.CONTENT = {
     "products.price": "Price on request",
     "products.whatsapp": "Ask on WhatsApp",
     "products.call": "Call",
+    "products.more": "Details",
+    "products.market_cta": "Full catalog in the market",
     "products.wa_msg": "Hello, I'm interested in: {title}. Could you tell me the price and delivery time?",
     "products.custom.title": "Don't see what you need?",
     "products.custom.text": "Send us a photo, a link or a product name. We'll find the factory and work out the price including delivery.",

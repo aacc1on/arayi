@@ -1,7 +1,7 @@
 /* =====================================================================
    ARAYI — կայքի տրամաբանությունը։ Այս ֆայլը փոխելու կարիք չկա.
    կապի տվյալները՝ js/config.js, տեքստերը՝ js/content.js,
-   ապրանքները՝ arayimport.am/admin (data/products.json)
+   ապրանքները՝ market.arayimport.am/admin (պահուստը՝ data/products.json)
    ===================================================================== */
 (function () {
   "use strict";
@@ -40,6 +40,17 @@
     return "https://wa.me/" + digits(wa).replace("+", "") + (text ? "?text=" + encodeURIComponent(text) : "");
   }
   function telLink() { var p = val("PHONE"); return p ? "tel:" + digits(p) : ""; }
+  function marketBase() { return val("MARKET").replace(/\/+$/, ""); }
+  function marketUrl(suffix) { var m = marketBase(); return m ? m + "/" + currentLang + "/" + (suffix || "") : ""; }
+
+  /* ---------- market links: [data-market="catalog/"] → https://market…/hy/catalog/ ---------- */
+  function fillMarket() {
+    all("[data-market]").forEach(function (el) {
+      var url = marketUrl(el.getAttribute("data-market"));
+      if (el.tagName === "A" && url) el.href = url;
+      el.hidden = !url;
+    });
+  }
 
   /* ---------- contacts: filled everywhere from config.js ---------- */
   function fillContacts(lang) {
@@ -90,9 +101,10 @@
     all("[data-requires-social]").forEach(function (el) { el.hidden = !html; });
   }
 
-  /* ---------- products (data/products.json) ---------- */
+  /* ---------- products (market feed, fallback data/products.json) ---------- */
   var products = null;         // null = not loaded yet
   var activeCat = "";          // "" = all categories
+  var MAX_PRODUCTS = 8;        // how many market products to show on this page
 
   function pick(p, field) {
     var a = p[field + "_" + currentLang], b = p[field + "_" + (currentLang === "en" ? "hy" : "en")];
@@ -105,17 +117,41 @@
   }
   function catKey(p) { return ((p.category_hy || p.category_en || "") + "").trim(); }
 
+  function getJSON(url) {
+    return fetch(url, { cache: "no-cache" }).then(function (r) {
+      if (!r.ok) throw new Error(r.status);
+      return r.json();
+    });
+  }
+  function listOf(data) {
+    var list = Array.isArray(data) ? data : (data && data.products) || [];
+    return list.filter(function (p) { return p && p.published !== false && (p.title_hy || p.title_en); });
+  }
+  // market feed fields → this page's fields (summary_* → text_*)
+  function fromMarket(p) {
+    return {
+      title_hy: p.title_hy, title_en: p.title_en,
+      category_hy: p.category_hy, category_en: p.category_en,
+      text_hy: p.summary_hy, text_en: p.summary_en,
+      url_hy: p.url_hy, url_en: p.url_en,
+      image: p.image, featured: p.featured
+    };
+  }
+  function loadLocal() {
+    return getJSON("data/products.json").then(listOf).catch(function () { return []; });
+  }
   function loadProducts() {
-    fetch("data/products.json", { cache: "no-cache" })
-      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-      .then(function (data) {
-        var list = Array.isArray(data) ? data : (data && data.products) || [];
-        products = list.filter(function (p) {
-          return p && p.published !== false && (p.title_hy || p.title_en);
-        });
-        renderProducts();
-      })
-      .catch(function () { products = []; renderProducts(); });
+    var base = marketBase();
+    var source = base
+      ? getJSON(base + "/api/products.json")
+          .then(function (data) {
+            var list = listOf(data).map(fromMarket);
+            if (!list.length) throw new Error("empty");
+            return list.slice(0, MAX_PRODUCTS);
+          })
+          .catch(loadLocal)
+      : loadLocal();
+    source.then(function (list) { products = list; renderProducts(); });
   }
 
   function renderProducts() {
@@ -130,13 +166,16 @@
       var title = pick(p, "title"), cat = pick(p, "category"), text = pick(p, "text");
       var price = (p.price || "").toString().trim();
       var img = imgUrl(p.image);
-      var wa = waLink(tr("products.wa_msg").replace("{title}", title));
+      var url = pick(p, "url");
+      var wa = waLink(tr("products.wa_msg").replace("{title}", title) + (url ? "\n" + url : ""));
+      var imgTag = img ? '<img src="' + esc(img) + '" alt="' + esc(title) + '" width="800" height="600" loading="lazy">' : "";
       html += '<article class="product" data-cat="' + esc(catKey(p)) + '">' +
-        '<div class="product-img">' + (img ? '<img src="' + esc(img) + '" alt="' + esc(title) + '" width="800" height="600" loading="lazy">' : "") + "</div>" +
+        '<div class="product-img">' + (url && img ? '<a href="' + esc(url) + '" tabindex="-1" aria-hidden="true">' + imgTag + "</a>" : imgTag) + "</div>" +
         '<div class="product-body">' +
           (cat ? '<span class="product-cat">' + esc(cat) + "</span>" : "") +
-          "<h3>" + esc(title) + "</h3>" +
+          "<h3>" + (url ? '<a href="' + esc(url) + '">' + esc(title) + "</a>" : esc(title)) + "</h3>" +
           (text ? "<p>" + esc(text) + "</p>" : "") +
+          (url ? '<a class="product-more" href="' + esc(url) + '">' + esc(tr("products.more")) + ' <span aria-hidden="true">→</span></a>' : "") +
           '<p class="product-price">' + esc(price || tr("products.price")) + "</p>" +
           '<div class="product-actions">' +
             (wa ? '<a class="btn btn-wa btn-sm" href="' + esc(wa) + '" target="_blank" rel="noopener">' + svgIcon("whatsapp") + "<span>" + esc(tr("products.whatsapp")) + "</span></a>" : "") +
@@ -288,6 +327,7 @@
       b.setAttribute("aria-pressed", b.getAttribute("data-lang") === lang ? "true" : "false");
     });
     fillContacts(lang);
+    fillMarket();
     setVideoLang(lang);
     renderProducts();
     try { localStorage.setItem("arayi-lang", lang); } catch (e) {}
