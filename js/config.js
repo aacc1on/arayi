@@ -25,9 +25,9 @@ window.SITE = {
   MAP_QUERY:  "Yeghvard, Armenia",      // ինչ փնտրի քարտեզը (կարող եք գրել ճշգրիտ հասցեն)
 
   /* ---------- Սոցցանցեր (դատարկը չի երևա) ---------- */
-  FACEBOOK:   "",                       // օր.՝ https://facebook.com/arayi
-  INSTAGRAM:  "",                       // օր.՝ https://instagram.com/arayi
-  TIKTOK:     "",                       // օր.՝ https://tiktok.com/@arayi
+  FACEBOOK:   "https://www.facebook.com/profile.php?id=61595466696988",
+  INSTAGRAM:  "https://www.instagram.com/arayi_import",
+  TIKTOK:     "https://www.tiktok.com/@arayi_import",
   LINKEDIN:   "",                       // օր.՝ https://linkedin.com/company/arayi
   YOUTUBE:    "",                       // օր.՝ https://youtube.com/@arayi
 
