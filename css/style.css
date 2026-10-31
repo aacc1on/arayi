@@ -172,6 +172,9 @@ html:lang(hy) .hero h1 { font-size: clamp(1.8rem, 3.1vw, 2.75rem); max-width: 22
 .product-custom .btn { margin-top: 22px; align-self: flex-start; white-space: normal; text-align: center; }
 
 /* ---------- routes ---------- */
+.photoband { display: grid; grid-template-columns: repeat(4, 1fr); height: 280px; background: var(--forest); }
+.photoband img { width: 100%; height: 100%; object-fit: cover; }
+@media (max-width: 700px) { .photoband { grid-template-columns: 1fr 1fr; height: 300px; } .photoband img:nth-child(n+3) { display: none; } .photoband { height: 170px; } }
 .routes { padding: 96px 0 0; }
 .routes-side { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; margin-top: 40px; }
 .map-figure { margin: 0; }
